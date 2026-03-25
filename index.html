@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FX実戦・資金管理ツール</title>
+    <title>FX実戦・注文ナビ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #007AFF; --success: #34C759; --danger: #FF3B30; --bg: #F2F2F7; }
+        :root { --primary: #007AFF; --buy: #34C759; --sell: #FF3B30; --bg: #F2F2F7; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #1C1C1E; }
         .card { background: #fff; border-radius: 24px; padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); max-width: 450px; margin: 0 auto; }
         
@@ -16,120 +16,22 @@
         input { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 12px; font-size: 1.1rem; box-sizing: border-box; margin-bottom: 15px; outline: none; }
         input:focus { border-color: var(--primary); }
 
+        /* 売買切り替えボタン */
+        .type-grid { display: flex; gap: 8px; margin-bottom: 20px; }
+        .type-btn { flex: 1; border: 2px solid #EEE; background: #FFF; padding: 12px 0; font-weight: bold; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .type-btn.buy.active { background: var(--buy); color: #fff; border-color: var(--buy); }
+        .type-btn.sell.active { background: var(--sell); color: #fff; border-color: var(--sell); }
+
         /* レバレッジ */
         .lev-grid { display: flex; gap: 4px; background: #EEE; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
         .lev-btn { flex: 1; border: none; background: none; padding: 10px 0; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 0.8rem; }
         .lev-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* 推奨エリア */
-        .rec-box { background: #f0f7ff; border: 1px solid #d0e7ff; border-radius: 16px; padding: 15px; text-align: center; margin-bottom: 20px; }
-        .rec-num { font-size: 2rem; font-weight: 900; color: var(--primary); display: block; }
+        /* 強調エリア */
+        .highlight-box { background: #f0f7ff; border: 1px solid #d0e7ff; border-radius: 16px; padding: 15px; text-align: center; margin-bottom: 20px; }
+        .rec-num { font-size: 1.8rem; font-weight: 900; color: var(--primary); display: block; }
+        .manual-box { border: 3px solid var(--primary); border-radius: 16px; padding: 15px; margin-bottom: 20px; background: #fff; }
 
-        /* ★手入力の青い枠（ここが重要） */
-        .manual-box { border: 3px solid var(--primary); border-radius: 16px; padding: 15px; margin-bottom: 20px; background: #fff; box-shadow: 0 4px 15px rgba(0,122,255,0.1); }
-        .manual-input { border: none; border-bottom: 2px solid var(--primary); border-radius: 0; font-size: 1.8rem; text-align: center; margin-bottom: 0; padding: 5px; color: var(--primary); font-weight: bold; }
-
-        /* 結果 */
-        .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .res-card { background: #f9f9f9; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #EEE; }
-        .res-val { display: block; font-size: 1.3rem; font-weight: bold; margin-top: 5px; }
-
-        .btn-save { width: 100%; padding: 16px; background: var(--success); color: #fff; border: none; border-radius: 14px; font-size: 1rem; font-weight: bold; margin-top: 20px; cursor: pointer; }
-        #timestamp { font-size: 0.65rem; color: #999; text-align: center; margin-top: 15px; }
-    </style>
-</head>
-<body>
-
-<div class="card" id="capture-area">
-    <div style="text-align:center; font-weight:bold; color:var(--primary); margin-bottom:15px;">FX資金管理シミュレーター</div>
-
-    <span class="step-tag">STEP 1</span>
-    <label class="label">手元資金 (円)</label>
-    <input type="number" id="capital" value="100000" oninput="calculate()">
-
-    <span class="step-tag">STEP 2</span>
-    <label class="label">レバレッジ選択</label>
-    <div class="lev-grid">
-        <button class="lev-btn" onclick="setLev(1, this)">1倍</button>
-        <button class="lev-btn" onclick="setLev(5, this)">5倍</button>
-        <button class="lev-btn active" onclick="setLev(10, this)">10倍</button>
-        <button class="lev-btn" onclick="setLev(25, this)">25倍</button>
-    </div>
-
-    <span class="step-tag">STEP 3</span>
-    <label class="label">現在のドル円レート</label>
-    <input type="number" id="rate" step="0.01" value="150.00" oninput="calculate()">
-
-    <div class="rec-box">
-        <span class="label" style="color:var(--primary); margin-bottom:0;">推奨の注文数 (目安)</span>
-        <span class="rec-num" id="rec-units">0</span>
-        <small style="color:#666">これより少ない数で注文してください</small>
-    </div>
-
-    <div class="manual-box">
-        <span class="step-tag" style="background:var(--primary)">STEP 4</span>
-        <label class="label" style="color:var(--primary)">実際に注文する通貨数を入力</label>
-        <input type="number" id="manual-units" class="manual-input" placeholder="例: 5000" oninput="calculate()">
-    </div>
-
-    <div class="res-grid">
-        <div class="res-card">
-            <span class="label" style="color:var(--danger)">損切り幅</span>
-            <span class="res-val" id="res-sl" style="color:var(--danger)">0.0 pips</span>
-            <small id="risk-jpy" style="color:#999"></small>
-        </div>
-        <div class="res-card">
-            <span class="label" style="color:var(--success)">利確幅</span>
-            <span class="res-val" id="res-tp" style="color:var(--success)">0.0 pips</span>
-            <small style="color:#999">リスク比 1:2</small>
-        </div>
-    </div>
-    
-    <div id="timestamp"></div>
-    <button class="btn-save" id="save-btn" onclick="saveImage()">📸 トレード計画を画像で保存</button>
-</div>
-
-<script>
-    let leverage = 10;
-    async function fetchRate() {
-        try {
-            const res = await fetch('https://open.er-api.com/v6/latest/USD');
-            const data = await res.json();
-            document.getElementById('rate').value = data.rates.JPY.toFixed(2);
-            calculate();
-        } catch (e) {}
-    }
-    function setLev(val, btn) {
-        leverage = val;
-        document.querySelectorAll('.lev-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        calculate();
-    }
-    function calculate() {
-        const cap = parseFloat(document.getElementById('capital').value) || 0;
-        const rate = parseFloat(document.getElementById('rate').value) || 0;
-        const manual = parseFloat(document.getElementById('manual-units').value);
-        const recUnits = Math.floor((cap * leverage) / rate);
-        document.getElementById('rec-units').innerText = recUnits.toLocaleString();
-        const activeUnits = (manual > 0) ? manual : recUnits;
-        const riskJpy = Math.floor(cap * 0.02);
-        const slPips = activeUnits > 0 ? (riskJpy / activeUnits) * 100 : 0;
-        document.getElementById('res-sl').innerText = slPips.toFixed(1) + " pips";
-        document.getElementById('res-tp').innerText = (slPips * 2).toFixed(1) + " pips";
-        document.getElementById('risk-jpy').innerText = `(${riskJpy.toLocaleString()}円損)`;
-        document.getElementById('timestamp').innerText = "計算日時: " + new Date().toLocaleString();
-    }
-    function saveImage() {
-        document.getElementById('save-btn').style.display = 'none';
-        html2canvas(document.querySelector("#capture-area"), { scale: 2, backgroundColor: "#F2F2F7" }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `FXトレードメモ_${new Date().getTime()}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-            document.getElementById('save-btn').style.display = 'block';
-        });
-    }
-    fetchRate();
-</script>
-</body>
-</html>
+        /* 最終注文結果 */
+        .order-summary { background: #1C1C1E; color: #FFF; border-radius: 16px; padding: 20px; margin-top: 10px; }
+        .order-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom
