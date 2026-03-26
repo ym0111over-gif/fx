@@ -10,47 +10,40 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #1C1C1E; font-size: 14px; }
         .card { background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); max-width: 480px; margin: 0 auto; }
         
-        /* 最上部注意文 */
-        .disclaimer { font-size: 0.7rem; color: #d9534f; background: #fff5f5; border: 1px solid #f8d7da; padding: 12px; border-radius: 10px; margin-bottom: 20px; line-height: 1.4; }
+        .disclaimer { font-size: 0.65rem; color: #d9534f; background: #fff5f5; border: 1px solid #f8d7da; padding: 10px; border-radius: 10px; margin-bottom: 20px; line-height: 1.4; }
         
-        /* 現在価格エリア */
         .live-rate-box { background: #1c1c1e; color: #fff; padding: 12px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
         .live-price { font-family: monospace; font-size: 1.8rem; color: var(--safe); display: block; margin: 5px 0; }
-        .update-tag { font-size: 0.65rem; color: #888; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .update-tag { font-size: 0.65rem; color: #888; display: flex; justify-content: center; gap: 8px; }
 
         .step-title { font-weight: bold; font-size: 0.9rem; margin: 15px 0 8px; color: #333; }
-        
         input { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 10px; font-size: 1.1rem; box-sizing: border-box; outline: none; }
         input:focus { border-color: var(--primary); }
 
-        /* ① 方向を選ぶ */
         .type-grid { display: flex; gap: 8px; margin-bottom: 10px; }
         .type-btn { flex: 1; border: 2px solid #EEE; background: #FFF; padding: 12px; font-weight: bold; border-radius: 12px; cursor: pointer; font-size: 0.85rem; }
         .type-btn.buy.active { background: var(--safe); color: #fff; border-color: var(--safe); }
         .type-btn.sell.active { background: var(--danger); color: #fff; border-color: var(--danger); }
 
-        /* ② 資金とレバレッジ */
         .lev-grid { display: flex; gap: 4px; background: #EEE; padding: 4px; border-radius: 12px; margin-top: 8px; }
         .lev-btn { flex: 1; border: none; background: none; padding: 10px 0; font-weight: bold; cursor: pointer; border-radius: 8px; font-size: 0.8rem; }
         .lev-btn.active { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: var(--primary); }
-        .lev-note { font-size: 0.7rem; color: #666; margin-top: 5px; text-align: right; }
-
-        /* ③ 注文する価格 */
-        .price-note { font-size: 0.7rem; color: #888; margin-top: -10px; margin-bottom: 15px; text-align: right; }
 
         /* 通貨数結果エリア */
         .result-section { background: #f8f9fa; border: 1px solid #ddd; border-radius: 18px; padding: 15px; margin-top: 10px; }
         .unit-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 12px; border-radius: 10px; }
-        .unit-val { font-size: 1.5rem; font-weight: 900; }
+        .unit-val { font-size: 1.4rem; font-weight: 900; }
         .safe-box { background: #eaffed; border: 1px solid var(--safe); color: #155724; }
         .max-box { background: #fff5f5; border: 1px solid var(--danger); color: #721c24; }
-        .logic-hint { font-size: 0.7rem; color: #666; background: #fff; border: 1px dashed #ccc; padding: 10px; border-radius: 10px; margin-top: 10px; line-height: 1.4; }
 
-        /* ④ アプリに入れる数値 */
+        /* 手入力エリアを強調 */
+        .manual-input-box { border: 3px solid var(--primary); border-radius: 16px; padding: 16px; margin: 15px 0; background: #fff; box-shadow: 0 4px 12px rgba(0,122,255,0.1); }
+        .manual-input { border: none; border-bottom: 2px solid var(--primary); border-radius: 0; font-size: 1.8rem; text-align: center; color: var(--primary); font-weight: bold; margin-top: 5px; }
+
         .order-guide { background: #1c1c1e; color: #fff; border-radius: 16px; padding: 15px; margin-top: 10px; }
         .order-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; align-items: center; }
         .order-val { font-family: monospace; font-size: 1.3rem; font-weight: bold; }
-        .direction-hint { font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 10px; font-weight: bold; }
+        .direction-hint { font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 10px; }
 
         .save-btn { width: 100%; padding: 16px; background: #444; color: #fff; border: none; border-radius: 14px; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
@@ -76,24 +69,16 @@
 
     <div class="step-title">② 資金とレバレッジ</div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <div>
-            <label style="font-size:0.7rem; color:#666;">使う資金 (円)</label>
-            <input type="number" id="capital" value="100000" oninput="calculate()">
-        </div>
-        <div>
-            <label style="font-size:0.7rem; color:#666;">レバレッジ</label>
-            <div class="lev-grid">
-                <button class="lev-btn" onclick="setLev(5, this)">5倍</button>
-                <button class="lev-btn active" onclick="setLev(10, this)">10倍</button>
-                <button class="lev-btn" onclick="setLev(25, this)">25倍</button>
-            </div>
+        <input type="number" id="capital" value="100000" oninput="calculate()">
+        <div class="lev-grid">
+            <button class="lev-btn" onclick="setLev(5, this)">5倍</button>
+            <button class="lev-btn active" onclick="setLev(10, this)">10倍</button>
+            <button class="lev-btn" onclick="setLev(25, this)">25倍</button>
         </div>
     </div>
-    <div class="lev-note" id="lev-msg">低レバほど値動きの負担を抑えやすい</div>
 
     <div class="step-title">③ 注文する価格</div>
     <input type="number" id="entry-price" step="0.001" oninput="calculate()">
-    <div class="price-note">希望する価格で待つ「指値」の設定です</div>
 
     <div class="result-section">
         <div class="unit-box safe-box">
@@ -101,12 +86,16 @@
             <div class="unit-val" id="safe-units">0</div>
         </div>
         <div class="unit-box max-box">
-            <div style="font-size:0.75rem;"><b>上限の目安</b><br>入れすぎ・強制決済に注意</div>
+            <div style="font-size:0.75rem;"><b>上限の目安</b><br>強制決済に注意</div>
             <div class="unit-val" id="max-units">0</div>
         </div>
-        <div class="logic-hint" id="logic-text">
-            1回の損失を小さく抑える目安です。<br>
-            最終判断はチャート確認が必要です。
+    </div>
+
+    <div class="manual-input-box">
+        <div style="font-weight:bold; color:var(--primary); font-size:0.85rem; text-align:center;">実際に注文する数量を入力</div>
+        <input type="number" id="manual-units" class="manual-input" placeholder="例: 1000" oninput="calculate()">
+        <div style="font-size:0.65rem; color:#888; text-align:center; margin-top:8px;">
+            ※未入力なら「ゆとり目安」で計算します
         </div>
     </div>
 
@@ -159,30 +148,34 @@
         leverage = val;
         document.querySelectorAll('.lev-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const msg = document.getElementById('lev-msg');
-        msg.innerText = (val >= 25) ? "※損失が大きくなりやすい設定です" : "低レバほど値動きの負担を抑えやすい";
         calculate();
     }
 
     function calculate() {
         const cap = parseFloat(document.getElementById('capital').value) || 0;
         const entry = parseFloat(document.getElementById('entry-price').value) || 0;
+        const manual = parseFloat(document.getElementById('manual-units').value);
+        
+        // 目安の計算
         const maxUnits = Math.floor((cap * leverage) / entry);
         const safeUnits = Math.floor(maxUnits * 0.6);
 
         document.getElementById('max-units').innerText = maxUnits.toLocaleString();
         document.getElementById('safe-units').innerText = safeUnits.toLocaleString();
-        document.getElementById('disp-units').innerText = safeUnits.toLocaleString();
+
+        // 実際に計算に使用する通貨数（手入力があれば優先）
+        const activeUnits = (manual > 0) ? manual : safeUnits;
+        document.getElementById('disp-units').innerText = activeUnits.toLocaleString();
 
         const riskJpy = cap * 0.02; // 損失2%目安
-        const slDist = (riskJpy / safeUnits);
+        const slDist = (riskJpy / activeUnits);
         const tpDist = slDist * 2;
 
         let slPrice = (orderType === 'BUY') ? (entry - slDist) : (entry + slDist);
         let tpPrice = (orderType === 'BUY') ? (entry + tpDist) : (entry - tpDist);
 
-        document.getElementById('disp-sl').innerText = safeUnits > 0 ? slPrice.toFixed(3) : "---";
-        document.getElementById('disp-tp').innerText = safeUnits > 0 ? tpPrice.toFixed(3) : "---";
+        document.getElementById('disp-sl').innerText = activeUnits > 0 ? slPrice.toFixed(3) : "---";
+        document.getElementById('disp-tp').innerText = activeUnits > 0 ? tpPrice.toFixed(3) : "---";
     }
 
     function saveImage() {
