@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FX実戦・資金管理ナビ</title>
+    <title>FX指値・資金管理ナビ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --safe: #34C759; --danger: #FF3B30; --primary: #007AFF; --bg: #F2F2F7; }
@@ -16,18 +16,18 @@
         .step-num { background: #000; color: #fff; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.8rem; }
         
         label { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; }
-        input { width: 100%; padding: 15px; border: 2px solid #EEE; border-radius: 12px; font-size: 1.2rem; box-sizing: border-box; outline: none; transition: 0.2s; background: #fff; }
+        input { width: 100%; padding: 15px; border: 2px solid #EEE; border-radius: 12px; font-size: 1.2rem; box-sizing: border-box; outline: none; background: #fff; }
         input:focus { border-color: var(--primary); background: #f9f9ff; }
         
-        /* エントリー価格（最重要） */
-        .entry-box { background: #fffceb; border: 2px solid #ffd700; border-radius: 15px; padding: 15px; margin-bottom: 10px; }
+        /* 【重要】指値入力エリア */
+        .entry-box { background: #f0f7ff; border: 2px solid var(--primary); border-radius: 15px; padding: 15px; margin-bottom: 10px; }
 
         .type-grid { display: flex; gap: 8px; margin-bottom: 10px; }
         .type-btn { flex: 1; border: 2px solid #EEE; background: #FFF; padding: 15px; font-weight: bold; border-radius: 12px; cursor: pointer; font-size: 0.9rem; }
         .type-btn.buy.active { background: var(--safe); color: #fff; border-color: var(--safe); }
         .type-btn.sell.active { background: var(--danger); color: #fff; border-color: var(--danger); }
 
-        .lev-grid { display: flex; gap: 4px; background: #EEE; padding: 4px; border-radius: 12px; margin-bottom: 5px; }
+        .lev-grid { display: flex; gap: 4px; background: #EEE; padding: 4px; border-radius: 12px; }
         .lev-btn { flex: 1; border: none; background: none; padding: 12px 0; font-weight: bold; cursor: pointer; border-radius: 10px; font-size: 0.85rem; }
         .lev-btn.active { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: var(--primary); }
 
@@ -36,21 +36,23 @@
         .safe-box { background: #eaffed; border: 1px solid var(--safe); color: #155724; }
         .unit-val { font-size: 1.6rem; font-weight: 900; }
 
-        .manual-input-box { border: 3px solid var(--primary); border-radius: 16px; padding: 18px; margin: 20px 0; background: #fff; box-shadow: 0 4px 15px rgba(0,122,255,0.1); }
+        /* 通貨数手入力 */
+        .manual-input-box { border: 2px solid #ccc; border-radius: 16px; padding: 15px; margin: 20px 0; background: #fff; }
 
         .order-guide { background: #1c1c1e; color: #fff; border-radius: 16px; padding: 20px; }
         .order-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; align-items: center; }
         .order-val { font-family: monospace; font-size: 1.5rem; font-weight: bold; }
         .direction-hint { font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 10px; }
 
-        .save-btn { width: 100%; padding: 18px; background: #444; color: #fff; border: none; border-radius: 15px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 1rem; }
+        .save-btn { width: 100%; padding: 18px; background: #444; color: #fff; border: none; border-radius: 15px; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="card" id="capture-area">
     <div class="disclaimer">
-        ⚠ 注文前に証券アプリの「現在の価格」を必ず確認し、下の黄色い枠に入力してください。
+        ⚠ 自分が注文したい「指値」をSTEP 3に入力してください。<br>
+        それに基づいた損切り・利確価格が表示されます。
     </div>
 
     <div class="step-title"><span class="step-num">1</span> 売買を選ぶ</div>
@@ -75,10 +77,11 @@
         </div>
     </div>
 
-    <div class="step-title"><span class="step-num">3</span> アプリの価格を入力</div>
+    <div class="step-title"><span class="step-num">3</span> 指値・エントリー価格</div>
     <div class="entry-box">
-        <label style="color:var(--primary); font-weight:bold;">証券アプリの現在価格（USD/JPY）</label>
-        <input type="number" id="entry-price" step="0.001" placeholder="例: 158.920" oninput="calculate()">
+        <label style="color:var(--primary); font-weight:bold;">注文したい価格（USD/JPY）</label>
+        <input type="number" id="entry-price" step="0.001" placeholder="例: 158.500" oninput="calculate()">
+        <p style="font-size:0.65rem; color:var(--primary); margin:8px 0 0;">※この価格で「待ち伏せ」注文をする想定です</p>
     </div>
 
     <div class="result-section">
@@ -90,22 +93,26 @@
     </div>
 
     <div class="manual-input-box">
-        <label style="color:var(--primary); font-weight:bold; text-align:center; display:block; font-size:0.9rem;">実際に注文する数量を入力</label>
-        <input type="number" id="manual-units" style="border:none; border-bottom:3px solid var(--primary); border-radius:0; font-size:2.2rem; text-align:center; font-weight:900;" placeholder="例: 5000" oninput="calculate()">
+        <label style="color:#333; font-weight:bold; text-align:center; display:block; font-size:0.85rem;">実際に注文する数量を入力</label>
+        <input type="number" id="manual-units" style="border:none; border-bottom:3px solid #ccc; border-radius:0; font-size:2rem; text-align:center; font-weight:900;" placeholder="例: 5000" oninput="calculate()">
     </div>
 
     <div class="step-title"><span class="step-num">4</span> アプリに入れる数値</div>
     <div class="order-guide">
         <div class="order-item">
-            <span style="font-size:0.8rem; color:#aaa;">注文数量 (Units)</span>
+            <span style="font-size:0.75rem; color:#aaa;">指値価格 (Entry)</span>
+            <span class="order-val" id="disp-entry">---</span>
+        </div>
+        <div class="order-item">
+            <span style="font-size:0.75rem;">数量 (Units)</span>
             <span class="order-val" id="disp-units">---</span>
         </div>
         <div class="order-item">
-            <span style="font-size:0.8rem; color:var(--danger)">損切り価格</span>
+            <span style="font-size:0.75rem; color:var(--danger)">損切り価格 (Stop)</span>
             <span class="order-val" style="color:var(--danger)" id="disp-sl">---</span>
         </div>
         <div class="order-item" style="border:none;">
-            <span style="font-size:0.8rem; color:var(--safe)">利益確定価格</span>
+            <span style="font-size:0.75rem; color:var(--safe)">利確価格 (Limit)</span>
             <span class="order-val" style="color:var(--safe)" id="disp-tp">---</span>
         </div>
         <div class="direction-hint" id="direction-hint">買い：下で損 ／ 上で利確</div>
@@ -138,19 +145,18 @@
         const entry = parseFloat(document.getElementById('entry-price').value) || 0;
         const manual = parseFloat(document.getElementById('manual-units').value);
         
+        document.getElementById('disp-entry').innerText = entry > 0 ? entry.toFixed(3) : "---";
+
         if(entry <= 0) return;
 
-        // 目安の計算
         const maxUnits = Math.floor((cap * leverage) / entry);
         const safeUnits = Math.floor(maxUnits * 0.6);
         document.getElementById('safe-units').innerText = safeUnits.toLocaleString();
 
-        // 実行数量の決定
         const activeUnits = (manual > 0) ? manual : safeUnits;
         document.getElementById('disp-units').innerText = activeUnits.toLocaleString();
 
-        // 資金2%リスクでpips計算
-        const riskJpy = cap * 0.02;
+        const riskJpy = cap * 0.02; // 資金の2%をリスクに
         const slDist = (riskJpy / activeUnits);
         const tpDist = slDist * 2;
 
@@ -164,7 +170,7 @@
     function saveImage() {
         html2canvas(document.querySelector("#capture-area"), { scale: 2 }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `FXトレードメモ_${new Date().getTime()}.png`;
+            link.download = `FXトレード計画_${new Date().getTime()}.png`;
             link.href = canvas.toDataURL();
             link.click();
         });
